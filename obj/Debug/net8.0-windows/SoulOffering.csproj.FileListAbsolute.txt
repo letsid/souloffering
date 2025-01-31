@@ -1,0 +1,10 @@
+C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\bin\Debug\net8.0-windows\SoulOffering.deps.json
+C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\bin\Debug\net8.0-windows\SoulOffering.dll
+C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\obj\Debug\net8.0-windows\SoulOffering.csproj.AssemblyReference.cache
+C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\obj\Debug\net8.0-windows\SoulOffering.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\obj\Debug\net8.0-windows\SoulOffering.AssemblyInfoInputs.cache
+C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\obj\Debug\net8.0-windows\SoulOffering.AssemblyInfo.cs
+C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\obj\Debug\net8.0-windows\SoulOffering.csproj.CoreCompileInputs.cache
+C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\obj\Debug\net8.0-windows\SoulOffering.dll
+C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\obj\Debug\net8.0-windows\refint\SoulOffering.dll
+C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\obj\Debug\net8.0-windows\ref\SoulOffering.dll

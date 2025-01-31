@@ -1,0 +1,7 @@
+Build failed:
+[31.01.2025 17:07:21, C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\SoulOffering.cs(49, 79)] CS0103: Der Name "_isActive" ist im aktuellen Kontext nicht vorhanden.
+[31.01.2025 17:07:21, C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\SoulOffering.cs(150, 9)] CS0103: Der Name "_isActive" ist im aktuellen Kontext nicht vorhanden.
+[31.01.2025 17:07:21, C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\SoulOffering.cs(189, 13)] CS0103: Der Name "_isActive" ist im aktuellen Kontext nicht vorhanden.
+[31.01.2025 17:07:21, C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\SoulOffering.cs(198, 13)] CS0103: Der Name "_isActive" ist im aktuellen Kontext nicht vorhanden.
+[31.01.2025 17:07:21, C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\SoulOffering.cs(245, 29)] CS0103: Der Name "_isActive" ist im aktuellen Kontext nicht vorhanden.
+[31.01.2025 17:07:21, C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\SoulOffering.cs(269, 21)] CS0103: Der Name "_isActive" ist im aktuellen Kontext nicht vorhanden.
