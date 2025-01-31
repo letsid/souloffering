@@ -8,3 +8,4 @@ C:\Users\distel\Desktop\POE2\Plugins\Temp\souloffering\SoulOffering.dll
 C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\obj\Debug\net8.0-windows\win-x64\SoulOffering.dll
 C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\obj\Debug\net8.0-windows\win-x64\refint\SoulOffering.dll
 C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\obj\Debug\net8.0-windows\win-x64\ref\SoulOffering.dll
+C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\obj\Debug\net8.0-windows\win-x64\SoulOffering.sourcelink.json
