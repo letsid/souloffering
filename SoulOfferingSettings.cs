@@ -25,8 +25,6 @@ public class SoulOfferingSettings : ISettings
     [Menu("Action Delay", "General delay between actions in milliseconds")]
     public RangeNode<int> ActionDelay { get; set; } = new(100, 50, 2000);
 
-    [Menu("Debug Mode", "Enable debug logging", 3000)]
-    public ToggleNode DebugMode { get; set; } = new(false);
 
     [Menu("Enable Logging", "Show plugin activity in log window", 3100)]
     public ToggleNode EnableLogging { get; set; } = new(false);

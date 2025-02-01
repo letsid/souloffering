@@ -322,8 +322,6 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
     {
         if (!ShouldExecute(out string state))
         {
-            if (Settings.DebugMode && Settings.EnableLogging)
-                LogPluginMessage($"Plugin paused: {state}");
             _currentState = SkillState.Idle;
             _isActive = false;
             _targetSkeleton = null;
