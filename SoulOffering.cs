@@ -8,12 +8,13 @@ using ExileCore2.Shared.Helpers;
 using System.Windows.Forms;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
+using System.Threading.Tasks;
 using RectangleF = ExileCore2.Shared.RectangleF;
 using Vector2 = System.Numerics.Vector2;
 using Vector3 = System.Numerics.Vector3;
 using ExileCore2.PoEMemory.MemoryObjects;
 using ExileCore2.Shared.Enums;
+using System;
 
 namespace SoulOffering;
 
@@ -25,7 +26,6 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
     private readonly Stopwatch _castTimer = Stopwatch.StartNew();
     private int _activeWeaponSetIndex;
     private bool _hasInfusionBuff;
-    private Vector2 _savedCursorPosition;
 
     private bool IsInSafeZone()
     {
@@ -33,40 +33,48 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
         return area?.IsHideout == true || area?.IsTown == true;
     }
 
+    private bool AnyHostileMobsInRange(float range)
+    {
+        return GameController.EntityListWrapper.ValidEntitiesByType[EntityType.Monster]
+            .Any(x => x?.GetComponent<Monster>() != null &&
+                     x.IsValid &&
+                     x.IsHostile &&
+                     x.IsAlive &&
+                     !x.IsHidden &&
+                     x.DistancePlayer <= range);
+    }
+
     // State machine
     private enum SkillState
     {
         Idle,
         WaitingForWeaponSwap,
+        MovingCursor,
         WaitingForCastCheck,
         RetryingCast,
         SwappingBack
     };
+
     public override void AreaChange(AreaInstance area)
     {
         base.AreaChange(area);
-
-        // Register the IsActive method during AreaChange
         GameController.PluginBridge.SaveMethod("SoulOffering.IsActive", () => _isActive);
         LogMessage("SoulOffering.IsActive registered in PluginBridge (via AreaChange)");
     }
 
     private SkillState _currentState = SkillState.Idle;
+    private Entity _targetSkeleton = null;
 
     public override bool Initialise()
     {
-        // Register input keys
         Settings.WeaponSwapKey.OnValueChanged += () => Input.RegisterKey(Settings.WeaponSwapKey);
         Settings.SoulOfferingKey.OnValueChanged += () => Input.RegisterKey(Settings.SoulOfferingKey);
         Input.RegisterKey(Settings.WeaponSwapKey);
         Input.RegisterKey(Settings.SoulOfferingKey);
 
-        // Log initialization success
         LogMessage("Soul Offering initialized");
-
         return true;
     }
-
 
     private void UpdatePlayerState()
     {
@@ -80,50 +88,67 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
         _hasInfusionBuff = false;
         if (GameController.Player.TryGetComponent<Buffs>(out var buffComp))
         {
-            _hasInfusionBuff = buffComp.HasBuff("infusion");
+            // Check for infusion buff and ensure it has some duration left
+            var buffList = buffComp.BuffsList;
+            if (buffList != null)
+            {
+                var infusionBuff = buffList.FirstOrDefault(b => b.Name == "infusion");
+                if (infusionBuff != null && infusionBuff.Timer > 0.1) // Only count buff if it has meaningful duration
+                {
+                    _hasInfusionBuff = true;
+                    LogMessage($"Found Infusion buff with {infusionBuff.Timer:F1}s remaining");
+                }
+            }
         }
     }
 
-    private bool IsCursorOverEntity(Entity entity)
+    private Entity GetNearestSkeleton()
     {
-        if (entity == null) return false;
-        var hover = GameController.Game.IngameState.UIHoverElement;
-        var hoverEntity = hover?.Entity;
-        return hoverEntity != null && hoverEntity.Address == entity.Address;
+        var player = GameController.Player;
+        if (player == null) return null;
+
+        return GameController.EntityListWrapper.ValidEntitiesByType[EntityType.Monster]
+            .Where(x => x != null && x.Path != null &&
+                       x.Path.Contains(SkeletonPath) &&
+                       x.IsAlive &&
+                       x.DistancePlayer < 100)
+            .OrderBy(x => x.DistancePlayer)
+            .FirstOrDefault();
     }
 
-    private bool HasAliveSkeletons()
+    private Vector2 GetEntityScreenPosition(Entity entity)
     {
-        var aliveCount = GameController.EntityListWrapper.ValidEntitiesByType[EntityType.Monster]
-            .Count(x => x.Path.Contains(SkeletonPath) && x.IsAlive);
+        if (entity?.GetComponent<Render>() is not { } render) return Vector2.Zero;
 
-        if (Settings.DebugMode)
-            LogMessage($"Found {aliveCount} alive skeletons");
-
-        return aliveCount > 0;
-    }
-
-    private Vector2 GetClickPositionFor(Entity entity)
-    {
-        var entityPos = entity.GetComponent<Render>().Pos;
+        var entityPos = render.Pos;
         var camera = GameController.Game.IngameState.Camera;
         var window = GameController.Window.GetWindowRectangleTimeCache;
         var screenPos = camera.WorldToScreen(entityPos);
+
         return window.TopLeft + screenPos;
     }
 
-    private void SaveCursorPosition()
+    private async Task MoveCursorSmoothly(Vector2 targetPos)
     {
-        _savedCursorPosition = Input.ForceMousePosition;
-        if (Settings.DebugMode)
-            LogMessage($"Saved cursor position: X={_savedCursorPosition.X}, Y={_savedCursorPosition.Y}");
-    }
+        var currentPos = Input.ForceMousePosition;
+        var distance = Vector2.Distance(currentPos, targetPos);
+        var steps = Math.Clamp((int)(distance / 15), 8, 20);
 
-    private void RestoreCursorPosition()
-    {
-        Input.SetCursorPos(_savedCursorPosition);
-        if (Settings.DebugMode)
-            LogMessage($"Restored cursor position: X={_savedCursorPosition.X}, Y={_savedCursorPosition.Y}");
+        var random = new Random();
+        for (var i = 0; i < steps; i++)
+        {
+            var t = (i + 1) / (float)steps;
+            var randomOffset = new Vector2(
+                ((float)random.NextDouble() * 2.5f) - 1.25f,
+                ((float)random.NextDouble() * 2.5f) - 1.25f
+            );
+            var nextPos = Vector2.Lerp(currentPos, targetPos, t) + randomOffset;
+            Input.SetCursorPos(nextPos);
+            await Task.Delay(random.Next(4, 8));
+        }
+
+        Input.SetCursorPos(targetPos);
+        await Task.Delay(25);
     }
 
     private void SwapWeapon()
@@ -134,37 +159,53 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
         LogMessage("Weapon swap performed");
     }
 
-    private bool CastSoulOffering()
+    private async Task<bool> CastSoulOffering()
     {
-        var skeletons = GameController.EntityListWrapper.ValidEntitiesByType[EntityType.Monster]
-            .Where(x => x.Path.Contains(SkeletonPath) && x.IsAlive)
-            .ToList();
-
-        if (!skeletons.Any()) return false;
-
-        SaveCursorPosition();
-        var skeleton = skeletons.First();
-        var targetPos = GetClickPositionFor(skeleton);
-        Input.SetCursorPos(targetPos);
-
-        if (!IsCursorOverEntity(skeleton))
+        _targetSkeleton = GetNearestSkeleton();
+        if (_targetSkeleton == null)
         {
-            Thread.Sleep(50);
-            LogMessage("Failed to target skeleton");
+            LogMessage("No valid skeleton found");
+            return false;
         }
 
-        Input.KeyDown(Settings.SoulOfferingKey.Value);
-        Thread.Sleep(10);
-        Input.KeyUp(Settings.SoulOfferingKey.Value);
-        Thread.Sleep(1000); // Wait 1000ms after pressing Q
+        var targetPos = GetEntityScreenPosition(_targetSkeleton);
+        if (targetPos == Vector2.Zero)
+        {
+            LogMessage("Invalid target position");
+            return false;
+        }
 
-        _isActive = false; // Mark inactive 1 second after casting
+        await MoveCursorSmoothly(targetPos);
+
+        // Extra small delay to ensure cursor is settled
+        await Task.Delay(25);
+
+        try
+        {
+            var key = Settings.SoulOfferingKey.Value;
+            LogMessage($"Starting key press sequence for key: {key}");
+
+            Input.KeyDown(key);
+            LogMessage("KeyDown sent");
+
+            await Task.Delay(50);
+
+            Input.KeyUp(key);
+            LogMessage("KeyUp sent");
+
+            await Task.Delay(1000);
+        }
+        catch (Exception ex)
+        {
+            LogError($"Error during key press: {ex.Message}");
+            return false;
+        }
+
+        _isActive = false;
         _castTimer.Restart();
         LogMessage("Soul Offering cast at skeleton position");
-        RestoreCursorPosition();
         return true;
     }
-
 
     private bool ShouldExecute(out string state)
     {
@@ -186,42 +227,118 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
             return false;
         }
 
+        // Check if any UI panels are open
+        if (GameController.Game.IngameState.IngameUi.InventoryPanel.IsVisible)
+        {
+            state = "Inventory is open";
+            return false;
+        }
+
+        if (GameController.IngameState.IngameUi.ChatTitlePanel.IsVisible)
+        {
+            state = "Chat is open";
+            return false;
+        }
+
+        if (GameController.IngameState.IngameUi.OpenLeftPanel.IsVisible)
+        {
+            state = "Left panel is open";
+            return false;
+        }
+
+        if (GameController.IngameState.IngameUi.OpenRightPanel.IsVisible)
+        {
+            state = "Right panel is open";
+            return false;
+        }
+
+        // Check for fullscreen panels (like options menu)
+        if (GameController.IngameState.IngameUi.FullscreenPanels.Any(p => p.IsVisible))
+        {
+            state = "Fullscreen panel is open";
+            return false;
+        }
+
+        // Check for large panels
+        if (GameController.IngameState.IngameUi.LargePanels.Any(p => p.IsVisible))
+        {
+            state = "Large panel is open";
+            return false;
+        }
+
+        if (GameController.Game.IsEscapeState)
+        {
+            state = "Game menu is open";
+            return false;
+        }
+
+        if (AnyHostileMobsInRange(60f))
+        {
+            state = "Hostile mobs within 60 units - pausing for safety";
+            return false;
+        }
+
+        // Check player life component
+        if (GameController.Player.TryGetComponent<Life>(out var lifeComp))
+        {
+            if (lifeComp.CurHP <= 0)
+            {
+                state = "Player is dead";
+                return false;
+            }
+        }
+
+        // Check for grace period
+        if (GameController.Player.TryGetComponent<Buffs>(out var buffComp))
+        {
+            if (buffComp.HasBuff("grace_period"))
+            {
+                state = "Grace period is active";
+                return false;
+            }
+        }
+
         state = "Ready";
         return true;
     }
 
-    public override void Tick()
+    public override async void Tick()
     {
         if (!ShouldExecute(out string state))
         {
             if (Settings.DebugMode)
                 LogMessage($"Plugin paused: {state}");
             _currentState = SkillState.Idle;
-            _isActive = false; // Ensure it's inactive when disabled
+            _isActive = false;
+            _targetSkeleton = null;
             return;
         }
 
         UpdatePlayerState();
 
-        if (_currentState == SkillState.Idle && !_hasInfusionBuff)
+        // In Idle state, always check buff status
+        if (_currentState == SkillState.Idle)
         {
-            LogMessage($"No Infusion buff detected, starting sequence. Current weapon set: {_activeWeaponSetIndex}");
-            _isActive = true; // Mark active at the start of the sequence
+            UpdatePlayerState(); // Refresh buff status
+            if (!_hasInfusionBuff)
+            {
+                LogMessage($"No Infusion buff detected (rechecking after combat), starting sequence. Current weapon set: {_activeWeaponSetIndex}");
+                _isActive = true;
 
-            if (_activeWeaponSetIndex == 0)
-            {
-                SwapWeapon();
-                _currentState = SkillState.WaitingForWeaponSwap;
-                LogMessage("Swapping weapons");
-            }
-            else
-            {
-                if (CastSoulOffering())
+                if (_activeWeaponSetIndex == 0)
                 {
-                    _currentState = SkillState.WaitingForCastCheck;
-                    LogMessage("Casting Soul Offering");
+                    SwapWeapon();
+                    _currentState = SkillState.WaitingForWeaponSwap;
+                    LogMessage("Swapping weapons");
                 }
+                else
+                {
+                    _currentState = SkillState.MovingCursor;
+                    LogMessage("Moving cursor to target");
+                }
+                return;
             }
+            // If we have the buff, just stay idle
             return;
         }
 
@@ -230,19 +347,42 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
             case SkillState.WaitingForWeaponSwap:
                 if (_weaponSwapTimer.ElapsedMilliseconds >= Settings.WeaponSwapDelay.Value)
                 {
-                    if (CastSoulOffering())
-                    {
-                        _currentState = SkillState.WaitingForCastCheck;
-                        LogMessage("Weapon swap complete - Casting");
-                    }
+                    _currentState = SkillState.MovingCursor;
+                    LogMessage("Weapon swap complete - Moving cursor");
+                }
+                break;
+
+            case SkillState.MovingCursor:
+                var success = await CastSoulOffering();
+                if (success)
+                {
+                    _currentState = SkillState.WaitingForCastCheck;
+                    LogMessage("Cast complete - Checking result");
+                }
+                else
+                {
+                    _currentState = SkillState.RetryingCast;
+                    LogMessage("Cast failed - Will retry");
                 }
                 break;
 
             case SkillState.WaitingForCastCheck:
                 if (_castTimer.ElapsedMilliseconds >= Settings.CastDelay.Value)
                 {
-                    UpdatePlayerState();
-                    if (_hasInfusionBuff)
+                    // Try checking for buff multiple times with small delays
+                    bool buffFound = false;
+                    for (int i = 0; i < 3 && !buffFound; i++)
+                    {
+                        UpdatePlayerState();
+                        if (_hasInfusionBuff)
+                        {
+                            buffFound = true;
+                            break;
+                        }
+                        await Task.Delay(100);
+                    }
+
+                    if (buffFound)
                     {
                         if (_activeWeaponSetIndex == 1)
                         {
@@ -253,23 +393,24 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
                         else
                         {
                             _currentState = SkillState.Idle;
-                            _isActive = false; // Mark inactive when done
+                            _isActive = false;
                             LogMessage("Buff acquired - Returning to idle");
                         }
                     }
                     else
                     {
+                        LogMessage("No buff detected after multiple checks - Retrying cast");
                         _currentState = SkillState.RetryingCast;
-                        LogMessage("No buff detected - Retrying cast");
                     }
                 }
                 break;
 
             case SkillState.RetryingCast:
-                if (CastSoulOffering())
+                success = await CastSoulOffering();
+                if (success)
                 {
                     _currentState = SkillState.WaitingForCastCheck;
-                    LogMessage("Retrying Soul Offering cast");
+                    LogMessage("Retry cast complete - Checking result");
                 }
                 break;
 
@@ -277,7 +418,8 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
                 if (_weaponSwapTimer.ElapsedMilliseconds >= Settings.WeaponSwapDelay.Value)
                 {
                     _currentState = SkillState.Idle;
-                    _isActive = false; // Mark inactive when finished
+                    _isActive = false;
+                    _targetSkeleton = null;
                     LogMessage("Sequence complete");
                 }
                 break;

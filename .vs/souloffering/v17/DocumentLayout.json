@@ -32,7 +32,7 @@
               "RelativeDocumentMoniker": "SoulOffering.cs",
               "ToolTip": "C:\\Users\\distel\\Desktop\\POE2\\Plugins\\Source\\souloffering\\SoulOffering.cs",
               "RelativeToolTip": "SoulOffering.cs",
-              "ViewState": "AgIAAHUAAAAAAAAAAAAAAJEAAAApAAAAAAAAAA==",
+              "ViewState": "AgIAAIkBAAAAAAAAAAAAAKsBAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-01-30T15:47:44.05Z",
               "EditorCaption": ""
@@ -47,8 +47,7 @@
               "RelativeToolTip": "SoulOfferingSettings.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAABPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-01-30T15:47:11.844Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-01-30T15:47:11.844Z"
             },
             {
               "$type": "Document",
@@ -60,8 +59,7 @@
               "RelativeToolTip": "SoulOffering.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-01-30T15:45:54.904Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-01-30T15:45:54.904Z"
             }
           ]
         }

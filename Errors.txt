@@ -1,7 +1,4 @@
 Build failed:
-[31.01.2025 17:07:21, C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\SoulOffering.cs(49, 79)] CS0103: Der Name "_isActive" ist im aktuellen Kontext nicht vorhanden.
-[31.01.2025 17:07:21, C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\SoulOffering.cs(150, 9)] CS0103: Der Name "_isActive" ist im aktuellen Kontext nicht vorhanden.
-[31.01.2025 17:07:21, C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\SoulOffering.cs(189, 13)] CS0103: Der Name "_isActive" ist im aktuellen Kontext nicht vorhanden.
-[31.01.2025 17:07:21, C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\SoulOffering.cs(198, 13)] CS0103: Der Name "_isActive" ist im aktuellen Kontext nicht vorhanden.
-[31.01.2025 17:07:21, C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\SoulOffering.cs(245, 29)] CS0103: Der Name "_isActive" ist im aktuellen Kontext nicht vorhanden.
-[31.01.2025 17:07:21, C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\SoulOffering.cs(269, 21)] CS0103: Der Name "_isActive" ist im aktuellen Kontext nicht vorhanden.
+[31.01.2025 23:48:32, C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\SoulOffering.cs(112, 42)] CS7036: Es wurde kein Argument angegeben, das dem erforderlichen Parameter "max" von "float.Clamp(float, float, float)" entspricht.
+[31.01.2025 23:48:32, C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\SoulOffering.cs(119, 31)] CS1061: "Random" enthält keine Definition für "NextFloat", und es konnte keine zugängliche NextFloat-Erweiterungsmethode gefunden werden, die ein erstes Argument vom Typ "Random" akzeptiert (möglicherweise fehlt eine using-Direktive oder ein Assemblyverweis).
+[31.01.2025 23:48:32, C:\Users\distel\Desktop\POE2\Plugins\Source\souloffering\SoulOffering.cs(120, 31)] CS1061: "Random" enthält keine Definition für "NextFloat", und es konnte keine zugängliche NextFloat-Erweiterungsmethode gefunden werden, die ein erstes Argument vom Typ "Random" akzeptiert (möglicherweise fehlt eine using-Direktive oder ein Assemblyverweis).
