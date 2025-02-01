@@ -27,6 +27,22 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
     private int _activeWeaponSetIndex;
     private bool _hasInfusionBuff;
 
+    private void LogPluginMessage(string message)
+    {
+        if (Settings.EnableLogging)
+        {
+            LogMessage(message);
+        }
+    }
+
+    private void LogPluginError(string error)
+    {
+        if (Settings.EnableLogging)
+        {
+            LogError(error);
+        }
+    }
+
     private bool IsInSafeZone()
     {
         var area = GameController.Area.CurrentArea;
@@ -59,7 +75,7 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
     {
         base.AreaChange(area);
         GameController.PluginBridge.SaveMethod("SoulOffering.IsActive", () => _isActive);
-        LogMessage("SoulOffering.IsActive registered in PluginBridge (via AreaChange)");
+        LogPluginMessage("SoulOffering.IsActive registered in PluginBridge (via AreaChange)");
     }
 
     private SkillState _currentState = SkillState.Idle;
@@ -72,7 +88,7 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
         Input.RegisterKey(Settings.WeaponSwapKey);
         Input.RegisterKey(Settings.SoulOfferingKey);
 
-        LogMessage("Soul Offering initialized");
+        LogPluginMessage("Soul Offering initialized");
         return true;
     }
 
@@ -96,7 +112,7 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
                 if (infusionBuff != null && infusionBuff.Timer > 0.1) // Only count buff if it has meaningful duration
                 {
                     _hasInfusionBuff = true;
-                    LogMessage($"Found Infusion buff with {infusionBuff.Timer:F1}s remaining");
+                    LogPluginMessage($"Found Infusion buff with {infusionBuff.Timer:F1}s remaining");
                 }
             }
         }
@@ -156,7 +172,7 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
         Input.KeyDown(Settings.WeaponSwapKey.Value);
         Input.KeyUp(Settings.WeaponSwapKey.Value);
         _weaponSwapTimer.Restart();
-        LogMessage("Weapon swap performed");
+        LogPluginMessage("Weapon swap performed");
     }
 
     private async Task<bool> CastSoulOffering()
@@ -164,14 +180,14 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
         _targetSkeleton = GetNearestSkeleton();
         if (_targetSkeleton == null)
         {
-            LogMessage("No valid skeleton found");
+            LogPluginMessage("No valid skeleton found");
             return false;
         }
 
         var targetPos = GetEntityScreenPosition(_targetSkeleton);
         if (targetPos == Vector2.Zero)
         {
-            LogMessage("Invalid target position");
+            LogPluginMessage("Invalid target position");
             return false;
         }
 
@@ -183,27 +199,27 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
         try
         {
             var key = Settings.SoulOfferingKey.Value;
-            LogMessage($"Starting key press sequence for key: {key}");
+            LogPluginMessage($"Starting key press sequence for key: {key}");
 
             Input.KeyDown(key);
-            LogMessage("KeyDown sent");
+            LogPluginMessage("KeyDown sent");
 
             await Task.Delay(50);
 
             Input.KeyUp(key);
-            LogMessage("KeyUp sent");
+            LogPluginMessage("KeyUp sent");
 
             await Task.Delay(1000);
         }
         catch (Exception ex)
         {
-            LogError($"Error during key press: {ex.Message}");
+            LogPluginError($"Error during key press: {ex.Message}");
             return false;
         }
 
         _isActive = false;
         _castTimer.Restart();
-        LogMessage("Soul Offering cast at skeleton position");
+        LogPluginMessage("Soul Offering cast at skeleton position");
         return true;
     }
 
@@ -306,8 +322,8 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
     {
         if (!ShouldExecute(out string state))
         {
-            if (Settings.DebugMode)
-                LogMessage($"Plugin paused: {state}");
+            if (Settings.DebugMode && Settings.EnableLogging)
+                LogPluginMessage($"Plugin paused: {state}");
             _currentState = SkillState.Idle;
             _isActive = false;
             _targetSkeleton = null;
@@ -322,19 +338,19 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
             UpdatePlayerState(); // Refresh buff status
             if (!_hasInfusionBuff)
             {
-                LogMessage($"No Infusion buff detected (rechecking after combat), starting sequence. Current weapon set: {_activeWeaponSetIndex}");
+                LogPluginMessage($"No Infusion buff detected (rechecking after combat), starting sequence. Current weapon set: {_activeWeaponSetIndex}");
                 _isActive = true;
 
                 if (_activeWeaponSetIndex == 0)
                 {
                     SwapWeapon();
                     _currentState = SkillState.WaitingForWeaponSwap;
-                    LogMessage("Swapping weapons");
+                    LogPluginMessage("Swapping weapons");
                 }
                 else
                 {
                     _currentState = SkillState.MovingCursor;
-                    LogMessage("Moving cursor to target");
+                    LogPluginMessage("Moving cursor to target");
                 }
                 return;
             }
@@ -348,7 +364,7 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
                 if (_weaponSwapTimer.ElapsedMilliseconds >= Settings.WeaponSwapDelay.Value)
                 {
                     _currentState = SkillState.MovingCursor;
-                    LogMessage("Weapon swap complete - Moving cursor");
+                    LogPluginMessage("Weapon swap complete - Moving cursor");
                 }
                 break;
 
@@ -357,12 +373,12 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
                 if (success)
                 {
                     _currentState = SkillState.WaitingForCastCheck;
-                    LogMessage("Cast complete - Checking result");
+                    LogPluginMessage("Cast complete - Checking result");
                 }
                 else
                 {
                     _currentState = SkillState.RetryingCast;
-                    LogMessage("Cast failed - Will retry");
+                    LogPluginMessage("Cast failed - Will retry");
                 }
                 break;
 
@@ -388,18 +404,18 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
                         {
                             SwapWeapon();
                             _currentState = SkillState.SwappingBack;
-                            LogMessage("Buff acquired - Swapping back");
+                            LogPluginMessage("Buff acquired - Swapping back");
                         }
                         else
                         {
                             _currentState = SkillState.Idle;
                             _isActive = false;
-                            LogMessage("Buff acquired - Returning to idle");
+                            LogPluginMessage("Buff acquired - Returning to idle");
                         }
                     }
                     else
                     {
-                        LogMessage("No buff detected after multiple checks - Retrying cast");
+                        LogPluginMessage("No buff detected after multiple checks - Retrying cast");
                         _currentState = SkillState.RetryingCast;
                     }
                 }
@@ -410,7 +426,7 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
                 if (success)
                 {
                     _currentState = SkillState.WaitingForCastCheck;
-                    LogMessage("Retry cast complete - Checking result");
+                    LogPluginMessage("Retry cast complete - Checking result");
                 }
                 break;
 
@@ -420,7 +436,7 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
                     _currentState = SkillState.Idle;
                     _isActive = false;
                     _targetSkeleton = null;
-                    LogMessage("Sequence complete");
+                    LogPluginMessage("Sequence complete");
                 }
                 break;
         }

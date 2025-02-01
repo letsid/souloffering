@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SoulOffering")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0bfb8d9fb7fbaf0540c3c3aecf55dc3e76a938af")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dfd448d9d4ac950a281c465f5018d30430c1f356")]
 [assembly: System.Reflection.AssemblyProductAttribute("SoulOffering")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SoulOffering")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

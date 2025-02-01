@@ -28,7 +28,9 @@ public class SoulOfferingSettings : ISettings
     [Menu("Debug Mode", "Enable debug logging", 3000)]
     public ToggleNode DebugMode { get; set; } = new(false);
 
+    [Menu("Enable Logging", "Show plugin activity in log window", 3100)]
+    public ToggleNode EnableLogging { get; set; } = new(false);
+
     [Menu("Disable in Safe Zones", "Prevents the plugin from executing in towns, hideouts, or other peaceful areas", 4000)]
     public ToggleNode DisableInSafeZones { get; set; } = new(true);
 }
-
