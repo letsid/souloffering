@@ -17,13 +17,13 @@ public class SoulOfferingSettings : ISettings
     public HotkeyNode SoulOfferingKey { get; set; } = new(Keys.Q);
 
     [Menu("Weapon Swap Delay", "Delay after weapon swap animation in milliseconds", 2000)]
-    public RangeNode<int> WeaponSwapDelay { get; set; } = new(1300, 500, 2000);
+    public RangeNode<int> WeaponSwapDelay { get; set; } = new(1065, 500, 2000);
 
     [Menu("Cast Delay", "Delay after casting Soul Offering in milliseconds")]
-    public RangeNode<int> CastDelay { get; set; } = new(400, 200, 2000);
+    public RangeNode<int> CastDelay { get; set; } = new(100, 50, 2000);
 
     [Menu("Action Delay", "General delay between actions in milliseconds")]
-    public RangeNode<int> ActionDelay { get; set; } = new(200, 100, 2000);
+    public RangeNode<int> ActionDelay { get; set; } = new(100, 50, 2000);
 
     [Menu("Debug Mode", "Enable debug logging", 3000)]
     public ToggleNode DebugMode { get; set; } = new(false);

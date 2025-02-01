@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SoulOffering")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dfd448d9d4ac950a281c465f5018d30430c1f356")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ba15ddc5c01d43a463cb82509f9bc0f0dbaeaf75")]
 [assembly: System.Reflection.AssemblyProductAttribute("SoulOffering")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SoulOffering")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
