@@ -222,7 +222,12 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
         LogPluginMessage("Soul Offering cast at skeleton position");
         return true;
     }
-
+        
+    private bool IsPluginActive(string pluginName)
+    {
+        var method = GameController.PluginBridge.GetMethod<Func<bool>>($"{pluginName}.IsActive");
+        return method?.Invoke() ?? false;
+    }
     private bool ShouldExecute(out string state)
     {
         if (!Settings.Enable.Value)
@@ -234,6 +239,12 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
         if (!GameController.Window.IsForeground())
         {
             state = "Game window is not focused";
+            return false;
+        }
+        
+        if (IsPluginActive("AutoBlink"))
+        {
+            state = "Paused: AutoBlink is active";
             return false;
         }
 
