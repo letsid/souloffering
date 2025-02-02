@@ -194,7 +194,7 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
         await MoveCursorSmoothly(targetPos);
 
         // Extra small delay to ensure cursor is settled
-        await Task.Delay(25);
+        await Task.Delay(5);
 
         try
         {
@@ -203,9 +203,7 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
 
             Input.KeyDown(key);
             LogPluginMessage("KeyDown sent");
-
-            await Task.Delay(50);
-
+            await Task.Delay(5);
             Input.KeyUp(key);
             LogPluginMessage("KeyUp sent");
 
@@ -228,6 +226,7 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
         var method = GameController.PluginBridge.GetMethod<Func<bool>>($"{pluginName}.IsActive");
         return method?.Invoke() ?? false;
     }
+    
     private bool ShouldExecute(out string state)
     {
         if (!Settings.Enable.Value)
@@ -241,11 +240,12 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
             state = "Game window is not focused";
             return false;
         }
-        
+
         if (IsPluginActive("AutoBlink"))
         {
             state = "Paused: AutoBlink is active";
             return false;
+            LogPluginMessage("autoblink");
         }
 
         if (Settings.DisableInSafeZones.Value && IsInSafeZone())
@@ -404,7 +404,7 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
                             buffFound = true;
                             break;
                         }
-                        await Task.Delay(100);
+                        await Task.Delay(20);
                     }
 
                     if (buffFound)
@@ -440,13 +440,10 @@ public class SoulOffering : BaseSettingsPlugin<SoulOfferingSettings>
                 break;
 
             case SkillState.SwappingBack:
-                if (_weaponSwapTimer.ElapsedMilliseconds >= Settings.WeaponSwapDelay.Value)
-                {
-                    _currentState = SkillState.Idle;
-                    _isActive = false;
-                    _targetSkeleton = null;
-                    LogPluginMessage("Sequence complete");
-                }
+                _currentState = SkillState.Idle;
+                _isActive = false;
+                _targetSkeleton = null;
+                LogPluginMessage("Sequence complete");
                 break;
         }
     }
