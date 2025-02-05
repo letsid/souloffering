@@ -25,6 +25,8 @@ public class SoulOfferingSettings : ISettings
     [Menu("Action Delay", "General delay between actions in milliseconds")]
     public RangeNode<int> ActionDelay { get; set; } = new(100, 50, 2000);
 
+    [Menu("Safe Range", "Plugin will pause if hostile monsters are within this range", 3000)]
+    public RangeNode<int> SafeRange { get; set; } = new(60, 0, 200);
 
     [Menu("Enable Logging", "Show plugin activity in log window", 3100)]
     public ToggleNode EnableLogging { get; set; } = new(false);
